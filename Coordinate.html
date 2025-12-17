@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="he">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מסע הקואורדינטות</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body, .game-container {
+      height: 100%;
+      width: 100%;
+    }
+
+    .game-container {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      overflow: auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .language-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .language-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-title {
+      color: #ffffff;
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .instructions {
+      color: #f0f0f0;
+      font-size: 16px;
+    }
+
+    .main-content {
+      display: flex;
+      gap: 24px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .coordinate-panel {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      flex: 0 0 280px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .challenge-section {
+      margin-bottom: 12px;
+    }
+
+    .stage-indicator {
+      background: #f0f0f0;
+      padding: 6px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #667eea;
+      font-size: 14px;
+    }
+
+    .challenge-title {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .treasure-hint {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      line-height: 1.3;
+      direction: ltr;
+      white-space: pre-line;
+    }
+
+    .input-section {
+      margin-bottom: 12px;
+    }
+
+    .input-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .coordinate-inputs-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin-bottom: 10px;
+      padding: 8px;
+      background: #f8f8f8;
+      border-radius: 10px;
+    }
+
+    .parenthesis {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .comma {
+      font-size: 20px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .coordinate-inputs-wrapper input {
+      width: 60px;
+      padding: 8px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 15px;
+      text-align: center;
+      transition: border-color 0.3s;
+      background: white;
+      direction: ltr;
+    }
+
+    .coordinate-inputs-wrapper input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .stats-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-item {
+      background: #f5f5f5;
+      padding: 6px 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .stat-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .canvas-container {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    #coordinateCanvas {
+      max-width: 100%;
+      max-height: 100%;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .feedback-message {
+      padding: 6px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: none;
+      font-size: 12px;
+    }
+
+    .feedback-success {
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #c3e6cb;
+    }
+
+    .feedback-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 2px solid #f5c6cb;
+    }
+
+    .completion-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .completion-content {
+      background: white;
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .completion-title {
+      font-size: 36px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 24px;
+    }
+
+    .completion-message {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .completion-info {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .completion-info-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 16px;
+    }
+
+    .completion-info-text {
+      font-size: 18px;
+      color: #333;
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+
+    .completion-code {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 72px;
+      font-weight: bold;
+      padding: 24px;
+      border-radius: 16px;
+      margin: 24px 0;
+      letter-spacing: 8px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .completion-instruction {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    .completion-button {
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 48px;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .completion-button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    [dir="rtl"] {
+      direction: rtl;
+    }
+
+    [dir="rtl"] .language-toggle {
+      right: auto;
+      left: 0;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .coordinate-panel {
+        flex: 0 0 auto;
+      }
+
+      .canvas-container {
+        min-height: 400px;
+      }
+
+      .language-toggle {
+        position: static;
+        margin-bottom: 16px;
+      }
+
+      .completion-content {
+        padding: 32px 24px;
+      }
+
+      .completion-title {
+        font-size: 28px;
+      }
+
+      .completion-code {
+        font-size: 56px;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="game-container" dir="rtl">
+   <div class="header"><button class="language-toggle" id="languageToggle">العربية</button>
+    <h1 class="game-title">מסע הקואורדינטות</h1>
+    <p class="instructions">סמן את הקואורדינטות כדי למצוא את האוצר!</p>
+   </div>
+   <div class="main-content">
+    <div class="coordinate-panel">
+     <div class="challenge-section">
+      <div class="stage-indicator" id="stageIndicator">
+       שלב א: מצא את היהלום
+      </div>
+      <h2 class="challenge-title" id="challengeTitle">מצא את האוצר!</h2>
+      <div class="treasure-hint" id="treasureHint">
+       חפש את היהלום על הצירים והזן את הקואורדינטות שלו 💎
+      </div>
+     </div>
+     <div class="feedback-message" id="feedbackMessage"></div>
+     <div class="input-section" id="inputSection"><label class="input-label" for="xInput" id="inputLabel">הזן קואורדינטות:</label>
+      <div class="coordinate-inputs-wrapper"><span class="parenthesis">(</span> <input type="number" id="yInput" placeholder="Y" aria-label="Y coordinate"> <span class="comma">,</span> <input type="number" id="xInput" placeholder="X" aria-label="X coordinate"> <span class="parenthesis">)</span>
+      </div>
+      <div class="button-group"><button class="btn btn-primary" id="plotButton">בדוק</button> <button class="btn btn-secondary" id="clearButton">משחק חדש</button>
+      </div>
+     </div>
+     <div class="stats-section">
+      <div class="stat-item"><span class="stat-label">ניקוד</span> <span class="stat-value" id="scoreValue">0</span>
+      </div>
+      <div class="stat-item"><span class="stat-label">ניסיונות</span> <span class="stat-value" id="attemptsValue">0</span>
+      </div>
+      <div class="stat-item"><span class="stat-label">מספר יהלומים</span> <span class="stat-value" id="roundsValue">0/6</span>
+      </div>
+     </div>
+    </div>
+    <div class="canvas-container">
+     <canvas id="coordinateCanvas" width="800" height="800"></canvas>
+    </div>
+   </div>
+  </div>
+  <div class="completion-modal" id="completionModal">
+   <div class="completion-content">
+    <h2 class="completion-title">כל הכבוד! 🎉</h2>
+    <p class="completion-message">סיימתם בהצלחה את כל האתגרים.</p>
+    <div class="completion-info">
+     <h3 class="completion-info-title">הידעת?</h3>
+     <p class="completion-info-text">למיקרוביט יש רשת של 5×5 לדים.<br>
+       ביחד — זה 25 לדים.</p>
+     <div class="completion-code">
+      25
+     </div>
+    </div>
+    <p class="completion-instruction">את הקוד הזה יש להזין במערכת</p><button class="completion-button" id="completionButton">אי��ור</button>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      game_title_hebrew: "מסע הקואורדינטות",
+      game_title_arabic: "مغامرة الإحداثيات",
+      instruction_text_hebrew: "סמן את הקואורדינטות כדי למצוא את האוצר!",
+      instruction_text_arabic: "ضع الإحداثيات للعثور على الكنز!",
+      success_message_hebrew: "מצאת את האוצר! 🎉",
+      success_message_arabic: "وجدت الكنز! 🎉",
+      background_color: "#667eea",
+      surface_color: "#ffffff",
+      text_color: "#333333",
+      primary_action_color: "#667eea",
+      secondary_action_color: "#e0e0e0",
+      font_family: "Segoe UI",
+      font_size: 16
+    };
+
+    const translations = {
+      hebrew: {
+        findTreasure: "מצא את האוצר!",
+        treasureHint: "חפש את היהלום על הצירים והזן את הקואורדינטות שלו 💎",
+        enterCoordinates: "הזן קואורדינטות:",
+        xAxis: "ציר X",
+        yAxis: "ציר Y",
+        plotPoint: "בדוק",
+        clear: "משחק חדש",
+        score: "ניקוד",
+        attempts: "ניסיונות",
+        rounds: "מספר יהלומים",
+        wrongAnswer: "נסה שנית",
+        validCoordinates: "אנא הזן קואורדינט����ת תק��נות",
+        languageButton: "العربية",
+        stageA: "שלב א: מצא את היהלום",
+        stageB: "שלב ב: סמן את הקואורדינטה",
+        stageBHint: "לחץ על המפה במקום הנכון 👆",
+        stageBTitle: "סמן את האוצר!",
+        coordinatePrompt: "מצא את הנקודה:",
+        movingToStageB: "מעולה! עוברים לשלב ב' 🎉",
+        completionTitle: "כל הכבוד! 🎉",
+        completionMessage: "סיימתם בהצלחה את כל האתגרים.",
+        didYouKnow: "הידעת?",
+        microbitInfo: "למיקרוביט יש רשת של 5×5 לדים.\nביחד — זה 25 לדים.",
+        codeInstruction: "את הקוד הזה יש להזין במערכת",
+        confirmButton: "אישור"
+      },
+      arabic: {
+        findTreasure: "ابحث عن الكنز!",
+        treasureHint: "ابحث عن الماسة على المحاور وأدخل إحداثياتها 💎",
+        enterCoordinates: "أدخل ��لإحداثيات:",
+        xAxis: "المحور X",
+        yAxis: "المحور Y",
+        plotPoint: "تحقق",
+        clear: "لعبة جديدة",
+        score: "النقاط",
+        attempts: "المحاولات",
+        rounds: "عدد الماسات",
+        wrongAnswer: "حاول مرة أخرى",
+        validCoordinates: "يرجى إدخال إحداثيات صالحة",
+        languageButton: "עברית",
+        stageA: "المرحلة أ: اعثر على الماسة",
+        stageB: "المرحلة ب: ضع علامة على الإحداثيات",
+        stageBHint: "انقر على الخريطة في المكان الصحيح 👆",
+        stageBTitle: "ضع علامة على الكنز!",
+        coordinatePrompt: "ابحث عن النقطة:",
+        movingToStageB: "ممتاز! الانتقال إلى المرحلة ب 🎉",
+        completionTitle: "أحسنت! 🎉",
+        completionMessage: "لقد ��كملت جميع التحديات بنجاح.",
+        didYouKnow: "هل تعلم؟",
+        microbitInfo: "يحتوي المي����روبيت على شبكة 5×5 من المصابيح.\nمعًا — هذا 25 مصباحًا.",
+        codeInstruction: "يجب إدخال هذا الرمز في النظام",
+        confirmButton: "تأكيد"
+      }
+    };
+
+    let currentLanguage = 'hebrew';
+
+    let gameState = {
+      score: 0,
+      attempts: 0,
+      targetX: 0,
+      targetY: 0,
+      stage: 1,
+      roundsCompleted: 0,
+      treasures: []
+    };
+
+    const canvas = document.getElementById('coordinateCanvas');
+    const ctx = canvas.getContext('2d');
+    const gridSize = 20;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const scale = 35;
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.strokeStyle = '#c0c0c0';
+      ctx.lineWidth = 1.5;
+
+      for (let i = -gridSize; i <= gridSize; i++) {
+        ctx.beginPath();
+        ctx.moveTo(centerX + i * scale, 0);
+        ctx.lineTo(centerX + i * scale, canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, centerY + i * scale);
+        ctx.lineTo(canvas.width, centerY + i * scale);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#333333';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(centerX, 0);
+      ctx.lineTo(centerX, canvas.height);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(canvas.width, centerY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      
+      for (let i = -10; i <= 10; i += 2) {
+        if (i !== 0) {
+          const displayText = i < 0 ? `${Math.abs(i)}-` : i.toString();
+          ctx.fillText(displayText, centerX + i * scale, centerY + 8);
+        }
+      }
+      
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      for (let i = -10; i <= 10; i += 2) {
+        if (i !== 0) {
+          const displayText = i < 0 ? `${Math.abs(i)}-` : i.toString();
+          ctx.fillText(displayText, centerX - 8, centerY - i * scale);
+        }
+      }
+
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      ctx.fillText('0', centerX - 8, centerY + 8);
+      
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 20px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('X', canvas.width - 30, centerY - 25);
+      ctx.fillText('Y', centerX + 30, 30);
+      
+      gameState.treasures.forEach(treasure => {
+        drawTreasure(treasure.x, treasure.y);
+      });
+    }
+
+    function drawTreasure(x, y) {
+      const canvasX = centerX + x * scale;
+      const canvasY = centerY - y * scale;
+      
+      ctx.font = '32px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💎', canvasX, canvasY);
+    }
+
+    function generateNewTarget() {
+      if (gameState.stage === 1) {
+        if (gameState.roundsCompleted === 0 && !gameState.quadrantOrder) {
+          const quadrants = [
+            { minX: 1, maxX: 10, minY: 1, maxY: 10 },
+            { minX: -10, maxX: -1, minY: 1, maxY: 10 },
+            { minX: -10, maxX: -1, minY: -10, maxY: -1 },
+            { minX: 1, maxX: 10, minY: -10, maxY: -1 },
+            { minX: -10, maxX: 10, minY: 0, maxY: 0 },
+            { minX: 0, maxX: 0, minY: -10, maxY: 10 }
+          ];
+          
+          for (let i = quadrants.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [quadrants[i], quadrants[j]] = [quadrants[j], quadrants[i]];
+          }
+          
+          gameState.quadrantOrder = quadrants;
+        }
+        
+        const quadrant = gameState.quadrantOrder[gameState.roundsCompleted];
+        
+        if (quadrant.minX === quadrant.maxX) {
+          gameState.targetX = 0;
+          gameState.targetY = Math.floor(Math.random() * (quadrant.maxY - quadrant.minY + 1)) + quadrant.minY;
+          if (gameState.targetY === 0) gameState.targetY = Math.random() < 0.5 ? 3 : -3;
+        } else if (quadrant.minY === quadrant.maxY) {
+          gameState.targetX = Math.floor(Math.random() * (quadrant.maxX - quadrant.minX + 1)) + quadrant.minX;
+          gameState.targetY = 0;
+          if (gameState.targetX === 0) gameState.targetX = Math.random() < 0.5 ? 3 : -3;
+        } else {
+          gameState.targetX = Math.floor(Math.random() * (quadrant.maxX - quadrant.minX + 1)) + quadrant.minX;
+          gameState.targetY = Math.floor(Math.random() * (quadrant.maxY - quadrant.minY + 1)) + quadrant.minY;
+        }
+      } else {
+        const range = 10;
+        gameState.targetX = Math.floor(Math.random() * (range * 2 + 1)) - range;
+        gameState.targetY = Math.floor(Math.random() * (range * 2 + 1)) - range;
+      }
+      
+      drawGrid();
+      
+      if (gameState.stage === 1) {
+        drawTreasure(gameState.targetX, gameState.targetY);
+      } else {
+        const t = translations[currentLanguage];
+        const hintText = `${t.coordinatePrompt}\n(${gameState.targetX}, ${gameState.targetY})`;
+        document.getElementById('treasureHint').textContent = hintText;
+      }
+    }
+
+    function showFeedback(message, isSuccess) {
+      const feedbackEl = document.getElementById('feedbackMessage');
+      feedbackEl.textContent = message;
+      feedbackEl.className = 'feedback-message ' + (isSuccess ? 'feedback-success' : 'feedback-error');
+      feedbackEl.style.display = 'block';
+      
+      setTimeout(() => {
+        feedbackEl.style.display = 'none';
+      }, 3000);
+    }
+
+    function updateStats() {
+      document.getElementById('scoreValue').textContent = gameState.score;
+      document.getElementById('attemptsValue').textContent = gameState.attempts;
+      const t = translations[currentLanguage];
+      document.querySelectorAll('.stat-label')[2].textContent = t.rounds;
+      document.getElementById('roundsValue').textContent = `${gameState.roundsCompleted}/6`;
+    }
+
+    function switchToStageB() {
+      gameState.stage = 2;
+      gameState.roundsCompleted = 0;
+      gameState.attempts = 0;
+      const t = translations[currentLanguage];
+      
+      document.getElementById('stageIndicator').textContent = t.stageB;
+      document.getElementById('challengeTitle').textContent = t.stageBTitle;
+      document.getElementById('inputSection').style.display = 'none';
+      
+      generateNewTarget();
+      updateStats();
+    }
+
+    function updateLanguage() {
+      const t = translations[currentLanguage];
+      const config = window.elementSdk?.config || defaultConfig;
+      
+      document.querySelector('.game-container').setAttribute('dir', 'rtl');
+      document.documentElement.setAttribute('lang', currentLanguage === 'hebrew' ? 'he' : 'ar');
+      
+      if (currentLanguage === 'hebrew') {
+        document.querySelector('.game-title').textContent = config.game_title_hebrew || defaultConfig.game_title_hebrew;
+        document.querySelector('.instructions').textContent = config.instruction_text_hebrew || defaultConfig.instruction_text_hebrew;
+      } else {
+        document.querySelector('.game-title').textContent = config.game_title_arabic || defaultConfig.game_title_arabic;
+        document.querySelector('.instructions').textContent = config.instruction_text_arabic || defaultConfig.instruction_text_arabic;
+      }
+      
+      if (gameState.stage === 1) {
+        document.getElementById('stageIndicator').textContent = t.stageA;
+        document.querySelector('.challenge-title').textContent = t.findTreasure;
+        document.getElementById('treasureHint').textContent = t.treasureHint;
+        document.querySelector('.input-label').textContent = t.enterCoordinates;
+        document.getElementById('plotButton').textContent = t.plotPoint;
+      } else {
+        document.getElementById('stageIndicator').textContent = t.stageB;
+        document.querySelector('.challenge-title').textContent = t.stageBTitle;
+        const hintText = `${t.coordinatePrompt}\n(${gameState.targetX}, ${gameState.targetY})`;
+        document.getElementById('treasureHint').textContent = hintText;
+      }
+      
+      document.getElementById('clearButton').textContent = t.clear;
+      document.querySelectorAll('.stat-label')[0].textContent = t.score;
+      document.querySelectorAll('.stat-label')[1].textContent = t.attempts;
+      document.querySelectorAll('.stat-label')[2].textContent = t.rounds;
+      document.getElementById('languageToggle').textContent = t.languageButton;
+    }
+
+    function showCompletionModal() {
+      const modal = document.getElementById('completionModal');
+      const t = translations[currentLanguage];
+      
+      document.querySelector('.completion-title').textContent = t.completionTitle;
+      document.querySelector('.completion-message').textContent = t.completionMessage;
+      document.querySelector('.completion-info-title').textContent = t.didYouKnow;
+      document.querySelector('.completion-info-text').innerHTML = t.microbitInfo.replace('\n', '<br>');
+      document.querySelector('.completion-instruction').textContent = t.codeInstruction;
+      document.getElementById('completionButton').textContent = t.confirmButton;
+      
+      modal.style.display = 'flex';
+    }
+
+    function closeCompletionModal() {
+      document.getElementById('completionModal').style.display = 'none';
+      handleClear();
+    }
+
+    function handlePlot() {
+      const xInput = document.getElementById('xInput');
+      const yInput = document.getElementById('yInput');
+      const y = parseInt(yInput.value);
+      const x = parseInt(xInput.value);
+      const t = translations[currentLanguage];
+
+      if (isNaN(x) || isNaN(y)) {
+        showFeedback(t.validCoordinates, false);
+        return;
+      }
+
+      gameState.attempts++;
+
+      if (x === gameState.targetX && y === gameState.targetY) {
+        gameState.score += Math.max(100 - (gameState.attempts - 1) * 10, 10);
+        gameState.roundsCompleted++;
+        
+        const config = window.elementSdk?.config || defaultConfig;
+        const successMessage = currentLanguage === 'hebrew' 
+          ? (config.success_message_hebrew || defaultConfig.success_message_hebrew)
+          : (config.success_message_arabic || defaultConfig.success_message_arabic);
+        
+        if (gameState.roundsCompleted >= 6) {
+          showFeedback(t.movingToStageB, true);
+          setTimeout(() => {
+            switchToStageB();
+          }, 2000);
+        } else {
+          showFeedback(successMessage, true);
+          setTimeout(() => {
+            gameState.attempts = 0;
+            generateNewTarget();
+            updateStats();
+            xInput.value = '';
+            yInput.value = '';
+            xInput.focus();
+          }, 2000);
+        }
+      } else {
+        showFeedback(t.wrongAnswer, false);
+        xInput.value = '';
+        yInput.value = '';
+        xInput.focus();
+      }
+
+      updateStats();
+    }
+
+    function handleCanvasClick(event) {
+      if (gameState.stage !== 2) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+      
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
+      const canvasClickX = clickX * scaleX;
+      const canvasClickY = clickY * scaleY;
+      
+      const gridX = Math.round((canvasClickX - centerX) / scale);
+      const gridY = Math.round((centerY - canvasClickY) / scale);
+      
+      gameState.attempts++;
+      
+      const t = translations[currentLanguage];
+      
+      if (gridX === gameState.targetX && gridY === gameState.targetY) {
+        gameState.treasures.push({ x: gridX, y: gridY });
+        drawGrid();
+        
+        gameState.score += Math.max(100 - (gameState.attempts - 1) * 10, 10);
+        gameState.roundsCompleted++;
+        
+        const config = window.elementSdk?.config || defaultConfig;
+        const successMessage = currentLanguage === 'hebrew' 
+          ? (config.success_message_hebrew || defaultConfig.success_message_hebrew)
+          : (config.success_message_arabic || defaultConfig.success_message_arabic);
+        
+        showFeedback(successMessage, true);
+        
+        if (gameState.roundsCompleted >= 6) {
+          setTimeout(() => {
+            showCompletionModal();
+          }, 1500);
+        } else {
+          setTimeout(() => {
+            gameState.attempts = 0;
+            generateNewTarget();
+            updateStats();
+          }, 2000);
+        }
+      } else {
+        showFeedback(t.wrongAnswer, false);
+      }
+      
+      updateStats();
+    }
+
+    function handleClear() {
+      gameState.score = 0;
+      gameState.attempts = 0;
+      gameState.stage = 1;
+      gameState.roundsCompleted = 0;
+      gameState.treasures = [];
+      gameState.quadrantOrder = null;
+      
+      document.getElementById('inputSection').style.display = 'block';
+      document.getElementById('treasureHint').classList.remove('ltr-text');
+      
+      updateLanguage();
+      generateNewTarget();
+      updateStats();
+      
+      document.getElementById('xInput').value = '';
+      document.getElementById('yInput').value = '';
+      document.getElementById('xInput').focus();
+    }
+
+    function toggleLanguage() {
+      currentLanguage = currentLanguage === 'hebrew' ? 'arabic' : 'hebrew';
+      updateLanguage();
+    }
+
+    document.getElementById('languageToggle').addEventListener('click', toggleLanguage);
+    document.getElementById('plotButton').addEventListener('click', handlePlot);
+    document.getElementById('clearButton').addEventListener('click', handleClear);
+    document.getElementById('completionButton').addEventListener('click', closeCompletionModal);
+    canvas.addEventListener('click', handleCanvasClick);
+
+    document.getElementById('xInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('yInput').focus();
+      } else if (e.key === 'Tab' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('yInput').focus();
+      }
+    });
+
+    document.getElementById('yInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        handlePlot();
+      } else if (e.key === 'Tab' && e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('xInput').focus();
+      }
+    });
+
+    async function onConfigChange(config) {
+      const gameTitle = document.querySelector('.game-title');
+      const instructions = document.querySelector('.instructions');
+      const container = document.querySelector('.game-container');
+      const panels = document.querySelectorAll('.coordinate-panel, .canvas-container');
+      const buttons = document.querySelectorAll('.btn-primary, .completion-button');
+      const secondaryButtons = document.querySelectorAll('.btn-secondary');
+      
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      
+      if (currentLanguage === 'hebrew') {
+        gameTitle.textContent = config.game_title_hebrew || defaultConfig.game_title_hebrew;
+        instructions.textContent = config.instruction_text_hebrew || defaultConfig.instruction_text_hebrew;
+      } else {
+        gameTitle.textContent = config.game_title_arabic || defaultConfig.game_title_arabic;
+        instructions.textContent = config.instruction_text_arabic || defaultConfig.instruction_text_arabic;
+      }
+      
+      gameTitle.style.fontSize = `${baseSize * 2.25}px`;
+      instructions.style.fontSize = `${baseSize}px`;
+      
+      container.style.background = `linear-gradient(135deg, ${config.background_color || defaultConfig.background_color} 0%, ${config.primary_action_color || defaultConfig.primary_action_color} 100%)`;
+      
+      panels.forEach(panel => {
+        panel.style.background = config.surface_color || defaultConfig.surface_color;
+      });
+      
+      document.querySelectorAll('.challenge-title, .stat-label, .input-label, .completion-message, .completion-info-text, .completion-instruction').forEach(el => {
+        el.style.color = config.text_color || defaultConfig.text_color;
+      });
+      
+      document.querySelector('.treasure-hint').style.background = 
+        `linear-gradient(135deg, ${config.background_color || defaultConfig.background_color} 0%, ${config.primary_action_color || defaultConfig.primary_action_color} 100%)`;
+      
+      buttons.forEach(btn => {
+        btn.style.background = config.primary_action_color || defaultConfig.primary_action_color;
+      });
+      
+      secondaryButtons.forEach(btn => {
+        btn.style.background = config.secondary_action_color || defaultConfig.secondary_action_color;
+      });
+      
+      document.querySelectorAll('.stat-value, .completion-title, .completion-info-title').forEach(el => {
+        el.style.color = config.primary_action_color || defaultConfig.primary_action_color;
+      });
+
+      document.querySelector('.completion-code').style.background = 
+        `linear-gradient(135deg, ${config.background_color || defaultConfig.background_color} 0%, ${config.primary_action_color || defaultConfig.primary_action_color} 100%)`;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['game_title_hebrew', config.game_title_hebrew || defaultConfig.game_title_hebrew],
+          ['game_title_arabic', config.game_title_arabic || defaultConfig.game_title_arabic],
+          ['instruction_text_hebrew', config.instruction_text_hebrew || defaultConfig.instruction_text_hebrew],
+          ['instruction_text_arabic', config.instruction_text_arabic || defaultConfig.instruction_text_arabic],
+          ['success_message_hebrew', config.success_message_hebrew || defaultConfig.success_message_hebrew],
+          ['success_message_arabic', config.success_message_arabic || defaultConfig.success_message_arabic]
+        ])
+      });
+    }
+
+    drawGrid();
+    generateNewTarget();
+    updateStats();
+    updateLanguage();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9af8953b06598e4a',t:'MTc2NTk5NzE4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
