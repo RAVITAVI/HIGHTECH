@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مهمة استعادة المتحف</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Light simulation classes */
+        .light-beam { transition: opacity 0.5s ease; }
+        .vase { transition: filter 0.5s ease; }
+        
+        .intensity-0 .light-beam { opacity: 0; }
+        .intensity-0 .vase { filter: brightness(0.2); }
+        
+        .intensity-25 .light-beam { opacity: 0.15; }
+        .intensity-25 .vase { filter: brightness(0.4); }
+        
+        .intensity-130 .light-beam { opacity: 0.6; }
+        .intensity-130 .vase { filter: brightness(0.8); }
+        
+        .intensity-255 .light-beam { opacity: 1; }
+        .intensity-255 .vase { filter: brightness(1.2) drop-shadow(0 0 10px gold); }
+
+        .correct { border: 4px solid #4ade80; background-color: #f0fdf4; }
+        .incorrect { border: 4px solid #f87171; background-color: #fef2f2; }
+    </style>
+</head>
+<body class="bg-slate-800 text-gray-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-700">
+        
+        <!-- Header -->
+        <div class="bg-yellow-600 p-6 text-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-yellow-500 opacity-20 pattern-grid-lg"></div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white relative z-10 drop-shadow-md">🔦 مهمة استعادة إضاءة المتحف</h1>
+            <p class="mt-2 text-yellow-100 text-lg relative z-10">أنقذوا المعروضات! قوموا باستعادة قيم الإضاءة الصحيحة.</p>
+        </div>
+
+        <div class="p-6 md:p-10 space-y-12">
+
+            <!-- Intro -->
+            <div class="bg-slate-800 p-6 rounded-xl border-r-4 border-yellow-500 shadow-lg">
+                <p class="text-lg leading-relaxed">
+                    <strong class="text-yellow-400 text-xl block mb-2">عاجل!</strong>
+                    تم تعطيل نظام إضاءة متحف العلوم من قبل اللصوص. تم مسح جميع القيم الرقمية للمصابيح. لكي يتمكن الزوار من رؤية المعروضات مرة أخرى، عليكم إعادة إدخال قيم شدة الضوء الصحيحة في وحدة التحكم micro:bit.
+                    <br>
+                    تذكروا: النطاق هو بين <span class="bg-slate-700 px-2 py-0.5 rounded font-mono text-yellow-300">0</span> (مطفأ) 
+                    و <span class="bg-slate-700 px-2 py-0.5 rounded font-mono text-yellow-300">255</span> (أقصى شدة).
+                </p>
+            </div>
+
+            <!-- STAGE 1 -->
+            <div id="stage1" class="space-y-6">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span class="bg-yellow-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
+                    <h2 class="text-2xl font-bold text-yellow-400">المرحلة 1: تحديد الشدة</h2>
+                </div>
+                <p class="text-gray-300">طابقوا القيمة الرقمية الصحيحة لكل معروض (0, 25, 130, 255):</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="cards-container">
+                    <!-- Card 1 -->
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center space-y-4">
+                        <div class="relative w-full h-48 bg-black rounded-lg overflow-hidden flex justify-center intensity-0" id="img-container-1">
+                            <!-- SVG Lamp Scene -->
+                            <div class="light-beam absolute top-0 w-32 h-full bg-gradient-to-b from-yellow-100/80 to-transparent blur-xl"></div>
+                            <svg class="vase relative mt-auto mb-4 w-20 h-32" viewBox="0 0 100 160">
+                                <path d="M30,150 Q30,160 50,160 Q70,160 70,150 L70,80 Q80,60 60,40 L60,20 L40,20 L40,40 Q20,60 30,80 Z" fill="#d97706"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400">الحالة: ظلام دامس</p>
+                        <select id="select-1" class="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white focus:ring-2 focus:ring-yellow-500 outline-none">
+                            <option value="">اختر قيمة...</option>
+                            <option value="0">0</option>
+                            <option value="25">25</option>
+                            <option value="130">130</option>
+                            <option value="255">255</option>
+                        </select>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center space-y-4">
+                        <div class="relative w-full h-48 bg-black rounded-lg overflow-hidden flex justify-center intensity-25" id="img-container-2">
+                             <div class="light-beam absolute top-0 w-32 h-full bg-gradient-to-b from-yellow-100/80 to-transparent blur-xl"></div>
+                             <svg class="vase relative mt-auto mb-4 w-20 h-32" viewBox="0 0 100 160">
+                                <path d="M30,150 Q30,160 50,160 Q70,160 70,150 L70,80 Q80,60 60,40 L60,20 L40,20 L40,40 Q20,60 30,80 Z" fill="#d97706"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400">الحالة: ضوء خافت جداً</p>
+                        <select id="select-2" class="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white focus:ring-2 focus:ring-yellow-500 outline-none">
+                            <option value="">اختر قيمة...</option>
+                            <option value="0">0</option>
+                            <option value="25">25</option>
+                            <option value="130">130</option>
+                            <option value="255">255</option>
+                        </select>
+                    </div>
+
+                     <!-- Card 3 -->
+                     <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center space-y-4">
+                        <div class="relative w-full h-48 bg-black rounded-lg overflow-hidden flex justify-center intensity-130" id="img-container-3">
+                             <div class="light-beam absolute top-0 w-32 h-full bg-gradient-to-b from-yellow-100/80 to-transparent blur-xl"></div>
+                             <svg class="vase relative mt-auto mb-4 w-20 h-32" viewBox="0 0 100 160">
+                                <path d="M30,150 Q30,160 50,160 Q70,160 70,150 L70,80 Q80,60 60,40 L60,20 L40,20 L40,40 Q20,60 30,80 Z" fill="#d97706"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400">الحالة: ضوء لطيف وواضح</p>
+                        <select id="select-3" class="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white focus:ring-2 focus:ring-yellow-500 outline-none">
+                            <option value="">اختر قيمة...</option>
+                            <option value="0">0</option>
+                            <option value="25">25</option>
+                            <option value="130">130</option>
+                            <option value="255">255</option>
+                        </select>
+                    </div>
+
+                     <!-- Card 4 -->
+                     <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col items-center space-y-4">
+                        <div class="relative w-full h-48 bg-black rounded-lg overflow-hidden flex justify-center intensity-255" id="img-container-4">
+                             <div class="light-beam absolute top-0 w-32 h-full bg-gradient-to-b from-yellow-100/80 to-transparent blur-xl"></div>
+                             <svg class="vase relative mt-auto mb-4 w-20 h-32" viewBox="0 0 100 160">
+                                <path d="M30,150 Q30,160 50,160 Q70,160 70,150 L70,80 Q80,60 60,40 L60,20 L40,20 L40,40 Q20,60 30,80 Z" fill="#d97706"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400">الحالة: ضوء كشاف قوي جداً</p>
+                        <select id="select-4" class="w-full p-2 bg-slate-700 border border-slate-600 rounded text-white focus:ring-2 focus:ring-yellow-500 outline-none">
+                            <option value="">اختر قيمة...</option>
+                            <option value="0">0</option>
+                            <option value="25">25</option>
+                            <option value="130">130</option>
+                            <option value="255">255</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button onclick="checkStage1()" class="w-full md:w-auto px-8 py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-lg transition shadow-lg mt-4">
+                    تحقق من إجابات المرحلة 1
+                </button>
+                <div id="feedback-1" class="hidden p-4 rounded-lg text-center font-bold"></div>
+            </div>
+
+
+            <!-- STAGE 2 -->
+            <div id="stage2" class="space-y-6 hidden opacity-0 transition-opacity duration-1000 border-t border-slate-700 pt-8">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span class="bg-yellow-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+                    <h2 class="text-2xl font-bold text-yellow-400">المرحلة 2: تحدي التسلسل</h2>
+                </div>
+                
+                <div class="bg-slate-700 p-6 rounded-lg border border-slate-600">
+                    <p class="text-lg mb-4">ترك المخترقون رسالة مشفرة: <br>
+                    <span class="text-yellow-300 italic">"لتشغيل الضوء في المعروض المركزي بنسبة 75% بالضبط من الشدة القصوى، عليكم حساب القيمة الصحيحة."</span></p>
+                    <p class="font-bold mb-4">إذا كان 255 هو الحد الأقصى، فما القيمة التي ندخلها للحصول على حوالي 3/4 الشدة؟</p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="checkStage2(this, 50)" class="option-btn p-4 bg-slate-800 hover:bg-slate-600 rounded border border-slate-500 transition">50</button>
+                        <button onclick="checkStage2(this, 127)" class="option-btn p-4 bg-slate-800 hover:bg-slate-600 rounded border border-slate-500 transition">127</button>
+                        <button onclick="checkStage2(this, 190)" class="option-btn p-4 bg-slate-800 hover:bg-slate-600 rounded border border-slate-500 transition">190</button>
+                        <button onclick="checkStage2(this, 300)" class="option-btn p-4 bg-slate-800 hover:bg-slate-600 rounded border border-slate-500 transition">300</button>
+                    </div>
+                    <div id="feedback-2" class="hidden mt-4 p-4 rounded-lg bg-green-900/50 text-green-300 border border-green-500 text-center"></div>
+                </div>
+            </div>
+
+
+            <!-- STAGE 3 -->
+            <div id="stage3" class="space-y-6 hidden opacity-0 transition-opacity duration-1000 border-t border-slate-700 pt-8">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span class="bg-yellow-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
+                    <h2 class="text-2xl font-bold text-yellow-400">المرحلة 3: مختبر الدقة</h2>
+                </div>
+
+                <div class="bg-slate-700 p-6 rounded-lg border border-slate-600">
+                    <p class="text-lg mb-6">
+                        تجربة فكرية: لنفترض أنكم غيرتم القيمة في micro:bit من <strong>100</strong> إلى <strong>101</strong>.
+                        <br>هل ستتمكن العين البشرية من ملاحظة التغيير في شدة الضوء؟
+                    </p>
+                    
+                    <div class="flex justify-center gap-6">
+                        <button onclick="checkStage3(false)" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold transition">نعم، سنلاحظ الفرق</button>
+                        <button onclick="checkStage3(true)" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold transition">لن نلاحظ الفرق</button>
+                    </div>
+                    
+                    <div id="feedback-3" class="hidden mt-6 p-4 rounded-lg bg-blue-900/50 text-blue-200 border border-blue-500">
+                        <p class="font-bold text-lg mb-2">بالضبط!</p>
+                        <p>دقة micro:bit (0-255) عالية جداً، لدرجة أن التغييرات بين رقم وآخر ضئيلة للغاية. هذا ما يسمح لنا بإنشاء تغييرات ضوئية "<span class="text-yellow-400 font-black text-2xl border-b-2 border-yellow-400 px-1">سلسة</span>" (Gradient) ومريحة للعين.</p>
+                        
+                        <div class="mt-8 text-center">
+                            <button onclick="finishGame()" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white text-xl font-bold py-4 px-10 rounded-full shadow-xl transform hover:scale-105 transition animate-bounce">
+                                أنهيت الاستعادة! لنبدأ ببرمجة micro:bit ⬅️
+                            </button>
+                            <p class="mt-6 text-green-200 text-lg font-medium">
+                                ممتاز! فهمتم أن الأرقام في micro:bit تمثل تسلسلاً. كلما زاد الرقم ضمن النطاق، زادت الطاقة التي تنتقل إلى المصباح.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Randomize Stage 1 Cards
+        function shuffleStage1() {
+            const container = document.getElementById('cards-container');
+            if (!container) return;
+            
+            const cards = Array.from(container.children);
+            
+            // Fisher-Yates Shuffle
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            
+            // Re-append in new order
+            cards.forEach(card => container.appendChild(card));
+        }
+
+        // Run shuffle on load
+        window.addEventListener('DOMContentLoaded', shuffleStage1);
+
+        // Stage 1 Logic
+        function checkStage1() {
+            const answers = {
+                'select-1': '0',
+                'select-2': '25',
+                'select-3': '130',
+                'select-4': '255'
+            };
+            
+            let allCorrect = true;
+            let feedback = document.getElementById('feedback-1');
+            
+            for (let id in answers) {
+                let el = document.getElementById(id);
+                let container = el.parentElement; // The div wrapping select
+                
+                if (el.value === answers[id]) {
+                    container.classList.remove('border-red-500', 'border-slate-700');
+                    container.classList.add('border-green-500', 'bg-green-900/20');
+                } else {
+                    allCorrect = false;
+                    container.classList.remove('border-green-500', 'border-slate-700');
+                    container.classList.add('border-red-500', 'bg-red-900/20');
+                }
+            }
+
+            feedback.classList.remove('hidden');
+            if (allCorrect) {
+                feedback.className = "p-4 rounded-lg text-center font-bold bg-green-600 text-white";
+                feedback.innerHTML = "أحسنتم! قمتم باستعادة القيم بنجاح. ننتقل إلى المرحلة التالية...";
+                
+                // Show Stage 2
+                setTimeout(() => {
+                    const s2 = document.getElementById('stage2');
+                    s2.classList.remove('hidden');
+                    // Small delay to allow display:block to apply before opacity transition
+                    requestAnimationFrame(() => {
+                        s2.classList.remove('opacity-0');
+                        s2.scrollIntoView({ behavior: 'smooth' });
+                    });
+                }, 1500);
+            } else {
+                feedback.className = "p-4 rounded-lg text-center font-bold bg-red-600 text-white";
+                feedback.innerHTML = "بعض القيم غير صحيحة. حاولوا المطابقة مرة أخرى حسب شدة الضوء في الصورة.";
+            }
+        }
+
+        // Stage 2 Logic
+        function checkStage2(btn, value) {
+            // Reset styles
+            document.querySelectorAll('#stage2 .option-btn').forEach(b => {
+                b.classList.remove('bg-red-600', 'bg-green-600', 'border-white');
+                b.classList.add('bg-slate-800');
+            });
+
+            if (value === 190) {
+                btn.classList.remove('bg-slate-800');
+                btn.classList.add('bg-green-600', 'border-white');
+                
+                const fb = document.getElementById('feedback-2');
+                fb.innerHTML = "<strong>ممتاز!</strong> فهمتم أن الأرقام في micro:bit تمثل تسلسلاً.<br>كلما زاد الرقم ضمن النطاق، زادت الطاقة التي تنتقل إلى المصباح.";
+                fb.classList.remove('hidden');
+
+                // Show Stage 3
+                setTimeout(() => {
+                    const s3 = document.getElementById('stage3');
+                    s3.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        s3.classList.remove('opacity-0');
+                        s3.scrollIntoView({ behavior: 'smooth' });
+                    });
+                }, 2000);
+
+            } else {
+                btn.classList.remove('bg-slate-800');
+                btn.classList.add('bg-red-600');
+                alert("ليس تماماً. حاولوا حساب حوالي 3/4 من 255.");
+            }
+        }
+
+        // Stage 3 Logic
+        function checkStage3(isCorrect) {
+            if (isCorrect) {
+                document.getElementById('feedback-3').classList.remove('hidden');
+                document.getElementById('feedback-3').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert("حاولوا التفكير مرة أخرى. الفرق هو وحدة واحدة فقط من أصل 255 وحدة. هل هذا تغيير كبير بما يكفي لتلاحظه العين؟");
+            }
+        }
+
+        function finishGame() {
+            alert("ممتاز! أنهيتم الجزء النظري. أنتم الآن مستعدون للعمل مع micro:bit.");
+        }
+    </script>
+</body>
+</html>
