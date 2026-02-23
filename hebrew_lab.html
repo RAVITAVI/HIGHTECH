@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>מעבדת היעילות: נכסים ופונקציות</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #1e1e1e; color: #d4d4d4; display: flex; flex-direction: column; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        header { width: 100%; background: #2d2d2d; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        h1 { margin: 0; font-size: 1.5rem; color: #007acc; }
+        .stats-bar { display: flex; gap: 20px; font-size: 1.1rem; }
+        .stat-box { background: #333; padding: 5px 15px; border-radius: 5px; border: 1px solid #444; }
+        .bad { color: #ff6b6b; } .good { color: #4ec9b0; }
+        .workspace { display: flex; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; gap: 20px; }
+        .device-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #252526; border-radius: 10px; border: 1px solid #3e3e42; }
+        .microbit { background: #000; padding: 20px; border-radius: 15px; border: 4px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.8); position: relative; }
+        .grid { display: grid; grid-template-columns: repeat(5, 50px); grid-gap: 8px; }
+        .cell { width: 50px; height: 50px; background-color: #2a2a2a; border-radius: 3px; cursor: pointer; transition: 0.1s; border: 1px solid #444; }
+        .cell.active { background-color: #ff0044; box-shadow: 0 0 15px #ff0044; border-color: #ff0044; }
+        .action-buttons { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-clear { padding: 10px 20px; background: #ce9178; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        .btn-play { padding: 10px 20px; background: #4ec9b0; border: none; color: #1e1e1e; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .btn-play:disabled { opacity: 0.5; cursor: not-allowed; }
+        .controls-area { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .panel { background: #252526; padding: 15px; border-radius: 10px; border: 1px solid #3e3e42; }
+        h2 { margin-top: 0; font-size: 1.2rem; color: #dcdcaa; border-bottom: 1px solid #3e3e42; padding-bottom: 5px; display: flex; justify-content: space-between; }
+        input[type="text"] { width: 60%; padding: 8px; background: #3c3c3c; border: 1px solid #555; color: white; border-radius: 4px; }
+        .btn-create { background: #007acc; color: white; padding: 8px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; width: 35%; }
+        .assets-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 250px; overflow-y: auto; padding-top: 10px; }
+        .asset-btn { background: #2d2d2d; border: 1px solid #4ec9b0; color: #4ec9b0; padding: 10px; border-radius: 5px; cursor: pointer; text-align: right; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        .code-area { flex: 1.2; background: #1e1e1e; border: 1px solid #3e3e42; border-radius: 10px; display: flex; flex-direction: column; direction: ltr; text-align: left; position: relative; }
+        .code-header { background: #252526; padding: 10px; border-bottom: 1px solid #3e3e42; font-family: monospace; color: #9cdcfe; display: flex; justify-content: space-between; align-items: center; }
+        .code-content { padding: 15px; font-family: 'Consolas', monospace; font-size: 0.85rem; color: #d4d4d4; overflow-y: auto; height: 100%; white-space: pre; line-height: 1.5; }
+        .line-num { color: #858585; margin-right: 10px; display: inline-block; width: 30px; text-align: right; }
+        .cmd { color: #569cd6; } .coords { color: #b5cea8; } .func { color: #dcdcaa; } .comment { color: #6a9955; } .keyword { color: #c586c0; }
+        .btn-export { background: #333; color: #4ec9b0; border: 1px solid #4ec9b0; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4ec9b0; color: #1e1e1e; padding: 10px 20px; border-radius: 5px; font-weight: bold; display: none; z-index: 1000; }
+        .running-indicator { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); color: #4ec9b0; font-weight: bold; font-size: 0.9rem; display: none; }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="font-weight:bold;">סימולטור Micro:bit</div>
+        <h1>מעבדת היעילות (עברית)</h1>
+        <div class="stats-bar">
+            <div class="stat-box">שורות קוד: <span id="lineCount" class="bad">0</span></div>
+            <div class="stat-box">נכסים: <span id="assetCount" class="good">0</span></div>
+        </div>
+    </header>
+    <div class="workspace">
+        <div class="device-area">
+            <div class="microbit">
+                <div id="runningTag" class="running-indicator">▶ מריץ אנימציה...</div>
+                <div class="grid" id="grid"></div>
+            </div>
+            <div class="action-buttons">
+                <button id="playBtn" class="btn-play" onclick="playSequence()">▶ הפעל</button>
+                <button class="btn-clear" onclick="clearGrid()">מחק הכל</button>
+            </div>
+        </div>
+        <div class="controls-area">
+            <div class="panel">
+                <h2>1. יצירת פונקציית נכס</h2>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="assetName" placeholder="שם הנכס (באנגלית)">
+                    <button class="btn-create" onclick="saveAsset()">שמור</button>
+                </div>
+            </div>
+            <div class="panel" style="flex-grow: 1;">
+                <h2>2. מחסן נכסים</h2>
+                <div class="assets-list" id="assetsContainer">
+                    <button class="asset-btn" onclick="addAssetToCode('creeper')"><span>👾 קריפר</span></button>
+                    <button class="asset-btn" onclick="addAssetToCode('heart')"><span>❤️ לב</span></button>
+                    <button class="asset-btn" onclick="addAssetToCode('smile')"><span>😊 חיוך</span></button>
+                    <button class="asset-btn" onclick="addAssetToCode('arrow_up')"><span>⬆️ חץ</span></button>
+                </div>
+            </div>
+        </div>
+        <div class="code-area">
+            <div class="code-header">
+                <span id="fileName">main.ts</span>
+                <button class="btn-export" onclick="exportToClipboard()">העתק ל-MakeCode</button>
+            </div>
+            <div class="code-content" id="codeDisplay">
+                <span class="comment">// הלוח ריק... צייר משהו ולחץ על "שמור"</span>
+            </div>
+        </div>
+    </div>
+    <div id="toast" class="toast">הועתק בהצלחה!</div>
+    <script>
+        const grid = document.getElementById('grid'), codeDisplay = document.getElementById('codeDisplay'), lineCountDisplay = document.getElementById('lineCount'), assetCountDisplay = document.getElementById('assetCount'), assetsContainer = document.getElementById('assetsContainer'), playBtn = document.getElementById('playBtn'), runningTag = document.getElementById('runningTag'), toast = document.getElementById('toast'), fileName = document.getElementById('fileName');
+        let cells = [], manualPixels = [], activeAssets = [], isPlaying = false;
+        
+        for (let i = 0; i < 25; i++) {
+            let cell = document.createElement('div'); cell.classList.add('cell');
+            cell.onclick = () => { if(!isPlaying) togglePixel(i); };
+            grid.appendChild(cell); cells.push(cell);
+        }
+
+        function togglePixel(index) {
+            const cell = cells[index]; cell.classList.toggle('active');
+            if (cell.classList.contains('active')) manualPixels.push({x: index % 5, y: Math.floor(index / 5)});
+            else manualPixels = manualPixels.filter(p => !(p.x === index % 5 && p.y === Math.floor(index / 5)));
+            updateCodeView();
+        }
+
+        function updateCodeView(viewMode = 'main', focusAsset = null) {
+            let html = "", lines = 0;
+            fileName.innerText = viewMode === 'main' ? 'main.ts' : 'asset_creation.ts';
+
+            if (viewMode === 'asset_definition' && focusAsset) {
+                html += `<span class="comment">// הנה הקוד של הפונקציה החדשה שיצרת:</span>\n`;
+                lines++;
+                html += `<span class="line-num">${lines++}</span> <span class="keyword">function</span> <span class="func">${focusAsset.name}</span>() {\n`;
+                focusAsset.pattern.forEach(idx => {
+                    html += `<span class="line-num">${lines++}</span>    <span class="cmd">led.plot</span>(<span class="coords">${idx % 5}, ${Math.floor(idx / 5)}</span>);\n`;
+                });
+                html += `<span class="line-num">${lines++}</span> }\n\n`;
+                html += `<span class="comment">// לחץ על פליי או הוסף נכס כדי לחזור לקוד הראשי</span>`;
+            } else {
+                if (manualPixels.length > 0) { 
+                    html += `<span class="comment">// ציור חופשי (לא יעיל - כל פיקסל הוא שורה)</span>\n`; lines++; 
+                    manualPixels.forEach(p => { html += `<span class="line-num">${lines++}</span> <span class="cmd">led.plot</span>(<span class="coords">${p.x}, ${p.y}</span>);\n`; }); 
+                }
+                if (activeAssets.length > 0) {
+                    html += manualPixels.length > 0 ? "\n" : ""; html += `<span class="comment">// קריאות לפונקציות (שימוש חוזר בנכסים)</span>\n`; lines++;
+                    activeAssets.forEach(asset => { html += `<span class="line-num">${lines++}</span> <span class="func">${asset.name}</span>();\n<span class="line-num">${lines++}</span> <span class="cmd">basic.pause</span>(<span class="coords">500</span>);\n<span class="line-num">${lines++}</span> <span class="cmd">basic.clearScreen</span>();\n`; });
+                    html += `\n<span class="comment">// הגדרות הפונקציות בתחתית הקוד</span>\n`; lines++;
+                    [...new Map(activeAssets.map(item => [item.name, item])).values()].forEach(asset => {
+                        html += `<span class="line-num">${lines++}</span> <span class="keyword">function</span> <span class="func">${asset.name}</span>() {\n`;
+                        asset.pattern.forEach(idx => { html += `<span class="line-num">${lines++}</span>    <span class="cmd">led.plot</span>(<span class="coords">${idx % 5}, ${Math.floor(idx / 5)}</span>);\n`; });
+                        html += `<span class="line-num">${lines++}</span> }\n`;
+                    });
+                }
+            }
+            codeDisplay.innerHTML = lines === 0 ? `<span class="comment">// הלוח ריק... צייר משהו ולחץ על "שמור"</span>` : html;
+            lineCountDisplay.innerText = lines; lineCountDisplay.className = lines > 30 ? 'bad' : 'good';
+        }
+
+        function saveAsset() {
+            const nameInput = document.getElementById('assetName'); const name = nameInput.value.trim().replace(/\s+/g, '_') || "my_asset_" + (activeAssets.length + 1);
+            if (isPlaying) return;
+            const currentPattern = []; cells.forEach((c, i) => { if (c.classList.contains('active')) currentPattern.push(i); });
+            if (currentPattern.length === 0) return;
+            
+            const assetObj = { name: name, pattern: currentPattern };
+            const btn = document.createElement('button'); btn.className = 'asset-btn'; btn.innerHTML = `<span>💎 ${name}</span>`;
+            btn.onclick = () => addAssetToCode(null, assetObj); assetsContainer.appendChild(btn);
+            
+            // הצג את יצירת הפונקציה בקוד
+            updateCodeView('asset_definition', assetObj);
+            
+            clearGrid(false); 
+            manualPixels = []; // נקה ציור ידני לאחר שמירה לנכס
+            nameInput.value = ""; 
+            showToast("נכס נוצר כפונקציה!");
+        }
+
+        function addAssetToCode(type, customAsset = null) {
+            if (isPlaying) return; cells.forEach(c => c.classList.remove('active'));
+            let assetObj = customAsset || { name: "", pattern: [] };
+            if (!customAsset) {
+                if (type === 'creeper') assetObj = {name:"draw_creeper", pattern:[6, 8, 11, 12, 13, 16, 17, 18, 21, 23]};
+                else if (type === 'heart') assetObj = {name:"draw_heart", pattern:[1, 3, 5, 6, 7, 8, 9, 11, 12, 13, 17]};
+                else if (type === 'smile') assetObj = {name:"draw_smile", pattern:[6, 8, 15, 21, 22, 23, 19]};
+                else if (type === 'arrow_up') assetObj = {name:"draw_arrow_up", pattern:[2, 6, 7, 8, 10, 12, 14, 17, 22]};
+            }
+            activeAssets.push(assetObj); assetCountDisplay.innerText = activeAssets.length;
+            assetObj.pattern.forEach(i => cells[i].classList.add('active')); updateCodeView('main');
+        }
+
+        async function playSequence() {
+            if (isPlaying || (manualPixels.length === 0 && activeAssets.length === 0)) return;
+            updateCodeView('main'); // וודא שאנחנו רואים את הקוד הראשי בזמן ריצה
+            isPlaying = true; playBtn.disabled = true; runningTag.style.display = "block";
+            cells.forEach(c => c.classList.remove('active'));
+            for (let p of manualPixels) { cells[p.y * 5 + p.x].classList.add('active'); await new Promise(r => setTimeout(r, 100)); }
+            for (let asset of activeAssets) {
+                cells.forEach(c => c.classList.remove('active')); await new Promise(r => setTimeout(r, 100));
+                for (let idx of asset.pattern) { cells[idx].classList.add('active'); await new Promise(r => setTimeout(r, 50)); }
+                await new Promise(r => setTimeout(r, 600));
+            }
+            cells.forEach(c => c.classList.remove('active')); runningTag.style.display = "none"; playBtn.disabled = false; isPlaying = false;
+        }
+
+        function clearGrid(fullReset = true) {
+            cells.forEach(c => c.classList.remove('active'));
+            if (fullReset) { manualPixels = []; activeAssets = []; assetCountDisplay.innerText = 0; updateCodeView('main'); }
+        }
+
+        function exportToClipboard() {
+            let code = "// Export\n";
+            activeAssets.forEach(a => { code += `${a.name}()\nbasic.pause(500)\nbasic.clearScreen()\n`; });
+            [...new Map(activeAssets.map(item => [item.name, item])).values()].forEach(a => {
+                code += `\nfunction ${a.name}() {\n`; a.pattern.forEach(i => { code += `    led.plot(${i % 5}, ${Math.floor(i / 5)})\n`; }); code += "}\n";
+            });
+            const t = document.createElement("textarea"); t.value = code; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); showToast("הקוד הועתק!");
+        }
+
+        function showToast(msg) { toast.innerText = msg; toast.style.display = "block"; setTimeout(() => { toast.style.display = "none"; }, 3000); }
+    </script>
+</body>
+</html>
