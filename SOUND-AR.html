@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي الموجات الصوتية - التردد، الشدة، والطول الموجي</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            text-align: right;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            flex: 1;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #444;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .value-display {
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 250px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .wave-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .info-box {
+            background-color: #e8f4fd;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #b3d7ff;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #2980b9;
+        }
+        
+        .play-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 5px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .visualizer {
+            margin-top: 30px;
+        }
+        
+        .explanation {
+            background-color: #f0f7fb;
+            padding: 15px;
+            border-radius: 8px;
+            border-right: 5px solid #3498db;
+            margin-top: 30px;
+        }
+        
+        .explanation h3 {
+            margin-top: 0;
+            color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>محاكي الموجات الصوتية</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="frequency">التردد (Hz)</label>
+                <input type="range" id="frequency" min="20" max="1000" value="440" step="1">
+                <span>القيمة: <span id="frequencyValue" class="value-display">440</span> Hz</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="amplitude">الشدة</label>
+                <input type="range" id="amplitude" min="0" max="100" value="50" step="1">
+                <span>القيمة: <span id="amplitudeValue" class="value-display">50</span>%</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="duration">مدة الصوت (ثوانٍ)</label>
+                <input type="range" id="duration" min="0.1" max="10" value="2" step="0.1">
+                <span>القيمة: <span id="durationValue" class="value-display">2</span> ثوانٍ</span>
+            </div>
+        </div>
+        
+        <canvas id="waveCanvas"></canvas>
+        
+        <div class="play-controls">
+            <button id="playButton">تشغيل الصوت</button>
+            <button id="stopButton" disabled>إيقاف</button>
+        </div>
+        
+        <div class="wave-info">
+            <div class="info-box">
+                <h3>التردد</h3>
+                <p>عدد الدورات في الثانية</p>
+                <p id="frequencyInfo">440 Hz</p>
+            </div>
+            <div class="info-box">
+                <h3>الطول الموجي</h3>
+                <p>المسافة بين نقطتين متماثلتين في الموجة</p>
+                <p id="wavelengthInfo">0.78 متر</p>
+            </div>
+            <div class="info-box">
+                <h3>الشدة</h3>
+                <p>ارتفاع الموجة (السعة)</p>
+                <p id="amplitudeInfo">50%</p>
+            </div>
+            <div class="info-box">
+                <h3>مدة الصوت</h3>
+                <p>مدة الصوت بالثواني</p>
+                <p id="durationInfo">2 ثوانٍ</p>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3>شرح عن الموجات الصوتية</h3>
+            <p><strong>التردد:</strong> عدد الاهتزازات (الدورات) في الثانية، ويُقاس بالهيرتز (Hz). التردد الأعلى ينتج صوتاً أكثر حدة.</p>
+            <p><strong>الطول الموجي:</strong> المسافة بين نقطتين متماثلتين في الموجة، ويُقاس بالأمتار. يُحسب بالقانون: الطول الموجي = سرعة الصوت / التردد.</p>
+            <p><strong>الشدة:</strong> ارتفاع الموجة (السعة)، وتحدد قوة الصوت. السعة الأعلى تنتج صوتاً أقوى.</p>
+            <p><strong>مدة الصوت:</strong> المدة الزمنية التي يُسمع فيها الصوت، وتقاس بالثواني. تحدد كم من الوقت ستستمر الموجة في الاهتزاز.</p>
+        </div>
+    </div>
+
+    <script>
+        const SPEED_OF_SOUND = 343;
+        let audioContext = null;
+        let oscillator = null;
+        let gainNode = null;
+        
+        const frequencySlider = document.getElementById('frequency');
+        const frequencyValue = document.getElementById('frequencyValue');
+        const amplitudeSlider = document.getElementById('amplitude');
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        const durationSlider = document.getElementById('duration');
+        const durationValue = document.getElementById('durationValue');
+        const waveCanvas = document.getElementById('waveCanvas');
+        const playButton = document.getElementById('playButton');
+        const stopButton = document.getElementById('stopButton');
+        const frequencyInfo = document.getElementById('frequencyInfo');
+        const wavelengthInfo = document.getElementById('wavelengthInfo');
+        const amplitudeInfo = document.getElementById('amplitudeInfo');
+        const durationInfo = document.getElementById('durationInfo');
+        
+        const ctx = waveCanvas.getContext('2d');
+        
+        function resizeCanvas() {
+            waveCanvas.width = waveCanvas.clientWidth * window.devicePixelRatio;
+            waveCanvas.height = waveCanvas.clientHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            drawWave();
+        }
+        
+        function drawWave() {
+            const width = waveCanvas.width / window.devicePixelRatio;
+            const height = waveCanvas.height / window.devicePixelRatio;
+            const frequency = parseInt(frequencySlider.value);
+            const amplitude = parseInt(amplitudeSlider.value) / 100;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.strokeStyle = '#dddddd';
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            
+            const cycles = 4;
+            const period = width / cycles;
+            
+            for (let x = 0; x <= width; x++) {
+                const y = height / 2 + Math.sin(x / period * 2 * Math.PI * (frequency / 100)) * (height / 2 - 10) * amplitude;
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            updateWaveInfo();
+        }
+        
+        function updateWaveInfo() {
+            const frequency = parseInt(frequencySlider.value);
+            const amplitude = parseInt(amplitudeSlider.value);
+            const duration = parseFloat(durationSlider.value);
+            const wavelength = (SPEED_OF_SOUND / frequency).toFixed(2);
+            
+            frequencyInfo.textContent = `${frequency} Hz`;
+            wavelengthInfo.textContent = `${wavelength} متر`;
+            amplitudeInfo.textContent = `${amplitude}%`;
+            durationInfo.textContent = `${duration} ثوانٍ`;
+        }
+        
+        function initEvents() {
+            frequencySlider.addEventListener('input', function() {
+                frequencyValue.textContent = this.value;
+                drawWave();
+                
+                if (oscillator) {
+                    oscillator.frequency.value = this.value;
+                }
+            });
+            
+            amplitudeSlider.addEventListener('input', function() {
+                amplitudeValue.textContent = this.value;
+                drawWave();
+                
+                if (gainNode) {
+                    gainNode.gain.value = this.value / 100;
+                }
+            });
+            
+            durationSlider.addEventListener('input', function() {
+                durationValue.textContent = this.value;
+                drawWave();
+                updateWaveInfo();
+            });
+            
+            playButton.addEventListener('click', playSound);
+            stopButton.addEventListener('click', stopSound);
+            
+            window.addEventListener('resize', resizeCanvas);
+        }
+        
+        function playSound() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            if (oscillator) {
+                stopSound();
+            }
+            
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = parseInt(frequencySlider.value);
+            gainNode.gain.value = parseInt(amplitudeSlider.value) / 100;
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            
+            const duration = parseFloat(durationSlider.value);
+            setTimeout(stopSound, duration * 1000);
+            
+            playButton.disabled = true;
+            stopButton.disabled = false;
+        }
+        
+        function stopSound() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator.disconnect();
+                gainNode.disconnect();
+                oscillator = null;
+                gainNode = null;
+                
+                playButton.disabled = false;
+                stopButton.disabled = true;
+            }
+        }
+        
+        function init() {
+            resizeCanvas();
+            initEvents();
+            drawWave();
+        }
+        
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
